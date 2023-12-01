@@ -11,7 +11,7 @@ impl Expression {
         Self { ops }
     }
 
-    pub fn evaluate(&self) -> i32 {
+    pub fn evaluate(&self) -> i64 {
         let mut stack = Vec::with_capacity(self.ops.len());
         let mut rng = rand::thread_rng();
 
@@ -60,7 +60,7 @@ impl Operation {
         ops.push(Operation::Push(Value::parse(source)));
     }
 
-    fn evaluate(&self, stack: &mut Vec<i32>, rng: &mut ThreadRng) {
+    fn evaluate(&self, stack: &mut Vec<i64>, rng: &mut ThreadRng) {
         use Operation::*;
         match self {
             Push(value) => {
@@ -69,25 +69,25 @@ impl Operation {
             Add => {
                 let right = stack.pop().unwrap();
                 let left = stack.pop().unwrap();
-                stack.push(left + right);
+                stack.push(left.saturating_add(right));
             }
             Subtract => {
                 let right = stack.pop().unwrap();
                 let left = stack.pop().unwrap();
-                stack.push(left - right);
+                stack.push(left.saturating_sub(right));
             }
             Multiply => {
                 let right = stack.pop().unwrap();
                 let left = stack.pop().unwrap();
-                stack.push(left * right);
+                stack.push(left.saturating_mul(right));
             }
         }
     }
 }
 
 enum Value {
-    Constant(i32),
-    Dice(i32, i32),
+    Constant(i64),
+    Dice(i64, i64),
 }
 
 impl Value {
@@ -102,7 +102,7 @@ impl Value {
         Value::Constant(source.parse().unwrap())
     }
 
-    fn evaluate(&self, rng: &mut ThreadRng) -> i32 {
+    fn evaluate(&self, rng: &mut ThreadRng) -> i64 {
         use Value::*;
         match self {
             Constant(value) => *value,
